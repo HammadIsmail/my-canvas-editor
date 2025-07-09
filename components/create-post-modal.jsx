@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { X, Calendar, Clock, Sparkles, Upload, Image, Type, Video, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PostScheduler } from './post-scheduler';
@@ -10,6 +11,8 @@ import { PostEditor } from './post-editor';
 
 
 export function CreatePostModal({ isOpen, onClose, onPostCreated }) {
+  const router = useRouter();
+  const fileInputRef = useRef(null);
   const [step, setStep] = useState('action');
   const [postAction, setPostAction] = useState('now');
   const [scheduledDate, setScheduledDate] = useState(null);
@@ -18,7 +21,7 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }) {
   const [postContent, setPostContent] = useState({
     text: '',
     images: [],
-    video: null ,
+    video: null,
   });
 
   if (!isOpen) return null;
@@ -43,8 +46,48 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }) {
     setStep('content');
   };
 
-  const handleContentTypeSelected = () => {
+  const handleContentTypeSelected = (type) => {
     setContentType(type);
+    
+    if (type === 'template') {
+      // Navigate to editor endpoint
+      router.push('/editor');
+      onClose(); // Close modal when navigating
+    } else if (type === 'upload') {
+      // Trigger file input for upload
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleFileUpload = (event) => {
+    const files = Array.from(event.target.files);
+    
+    files.forEach(file => {
+      if (file.type.startsWith('image/')) {
+        // Handle image upload
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPostContent(prev => ({
+            ...prev,
+            images: [...prev.images, e.target.result]
+          }));
+        };
+        reader.readAsDataURL(file);
+      } else if (file.type.startsWith('video/')) {
+        // Handle video upload
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPostContent(prev => ({
+            ...prev,
+            video: e.target.result
+          }));
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    // Move to editor step after file upload
+    setStep('editor');
   };
 
   const handlePostComplete = (content) => {
@@ -125,65 +168,62 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }) {
         );
 
       case 'content':
-        if (!contentType) {
-          return (
-            <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Your Content</h2>
-                <p className="text-gray-600">Choose how you want to create your post</p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleContentTypeSelected('upload')}
-                  className="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <Upload className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Content</h3>
-                  <p className="text-sm text-gray-600">Upload your own images, videos, or create from scratch</p>
-                </button>
-                
-                <button
-                  onClick={() => handleContentTypeSelected('template')}
-                  className="p-6 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <FileText className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Use Template</h3>
-                  <p className="text-sm text-gray-600">Start with professionally designed templates</p>
-                </button>
-              </div>
-              
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep('accounts')}>
-                  Back
-                </Button>
-              </div>
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Your Content</h2>
+              <p className="text-gray-600">Choose how you want to create your post</p>
             </div>
-          );
-        }
-
-        if (contentType === 'template') {
-          return (
-            <PostTemplates
-              onTemplateSelected={(template) => {
-                setPostContent(template);
-                setStep('preview');
-              }}
-              onBack={() => setContentType(null)}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button
+                onClick={() => handleContentTypeSelected('upload')}
+                className="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all"
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Upload className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Content</h3>
+                <p className="text-sm text-gray-600">Upload your own images, videos, or create from scratch</p>
+              </button>
+              
+              <button
+                onClick={() => handleContentTypeSelected('template')}
+                className="p-6 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all"
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Use Template</h3>
+                <p className="text-sm text-gray-600">Start with professionally designed templates</p>
+              </button>
+            </div>
+            
+            {/* Hidden file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              accept="image/*,video/*"
+              multiple
+              style={{ display: 'none' }}
             />
-          );
-        }
+            
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStep('accounts')}>
+                Back
+              </Button>
+            </div>
+          </div>
+        );
 
+      case 'editor':
         return (
           <PostEditor
             content={postContent}
             onContentChange={setPostContent}
             onComplete={() => setStep('preview')}
-            onBack={() => setContentType(null)}
+            onBack={() => setStep('content')}
           />
         );
 
@@ -198,10 +238,23 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }) {
             <div className="bg-gray-50 rounded-xl p-6">
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 {postContent.images.length > 0 && (
+                  <div className="mb-4 grid grid-cols-2 gap-2">
+                    {postContent.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`Post preview ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                    ))}
+                  </div>
+                )}
+                
+                {postContent.video && (
                   <div className="mb-4">
-                    <img
-                      src={postContent.images[0]}
-                      alt="Post preview"
+                    <video
+                      src={postContent.video}
+                      controls
                       className="w-full h-48 object-cover rounded-lg"
                     />
                   </div>
@@ -231,7 +284,7 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }) {
             </div>
             
             <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep('content')}>
+              <Button variant="outline" onClick={() => setStep('editor')}>
                 Back to Edit
               </Button>
               <Button
