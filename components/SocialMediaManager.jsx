@@ -73,17 +73,7 @@ const SocialMediaManager = () => {
       users: '1.0B',
       buttonText: 'Connect'
     },
-    {
-      id: 'snapchat',
-      name: 'Snapchat',
-      icon: Camera,
-      color: 'bg-yellow-400',
-      hoverColor: 'hover:bg-yellow-500',
-      description: 'Multimedia messaging',
-      category: 'Messaging',
-      users: '750M',
-      buttonText: 'Connect'
-    },
+   
     {
       id: 'pinterest',
       name: 'Pinterest',
@@ -95,28 +85,41 @@ const SocialMediaManager = () => {
       users: '450M',
       buttonText: 'Connect'
     },
-    {
-      id: 'whatsapp',
-      name: 'WhatsApp',
-      icon: MessageCircle,
-      color: 'bg-green-500',
-      hoverColor: 'hover:bg-green-600',
-      description: 'Messaging and calling',
-      category: 'Messaging',
-      users: '2.0B',
-      buttonText: 'Connect'
-    },
-    {
-      id: 'telegram',
-      name: 'Telegram',
-      icon: Send,
-      color: 'bg-blue-500',
-      hoverColor: 'hover:bg-blue-600',
-      description: 'Cloud-based messaging',
-      category: 'Messaging',
-      users: '700M',
-      buttonText: 'Connect'
-    },
+  
+  {
+  id: 'telegram',
+  name: 'Telegram',
+  icon: Send,
+  color: 'bg-cyan-500',
+  hoverColor: 'hover:bg-cyan-600',
+  description: 'Cloud-based messaging app',
+  category: 'Messaging',
+  users: '900M',
+  buttonText: 'Connect'
+},
+{
+  id: 'slack',
+  name: 'Slack',
+  icon: MessageCircle,
+  color: 'bg-purple-600',
+  hoverColor: 'hover:bg-purple-700',
+  description: 'Team communication platform',
+  category: 'Workplace',
+  users: '50M',
+  buttonText: 'Connect'
+},
+{
+  id: 'threads',
+  name: 'Threads',
+  icon: Hash,
+  color: 'bg-black',
+  hoverColor: 'hover:bg-gray-800',
+  description: 'Text-based conversation app',
+  category: 'Microblogging',
+  users: '150M',
+  buttonText: 'Connect'
+},
+
     {
       id: 'discord',
       name: 'Discord',
@@ -139,94 +142,10 @@ const SocialMediaManager = () => {
       users: '430M',
       buttonText: 'Connect'
     },
-    {
-      id: 'twitch',
-      name: 'Twitch',
-      icon: Video,
-      color: 'bg-purple-600',
-      hoverColor: 'hover:bg-purple-700',
-      description: 'Live streaming platform',
-      category: 'Gaming',
-      users: '140M',
-      buttonText: 'Connect'
-    },
-    {
-      id: 'spotify',
-      name: 'Spotify',
-      icon: Headphones,
-      color: 'bg-green-600',
-      hoverColor: 'hover:bg-green-700',
-      description: 'Music streaming service',
-      category: 'Music',
-      users: '400M',
-      buttonText: 'Connect'
-    },
-    {
-      id: 'github',
-      name: 'GitHub',
-      icon: Github,
-      color: 'bg-gray-800',
-      hoverColor: 'hover:bg-gray-900',
-      description: 'Code repository hosting',
-      category: 'Development',
-      users: '100M',
-      buttonText: 'Connect'
-    },
-    {
-      id: 'behance',
-      name: 'Behance',
-      icon: Palette,
-      color: 'bg-blue-500',
-      hoverColor: 'hover:bg-blue-600',
-      description: 'Creative portfolio platform',
-      category: 'Design',
-      users: '20M',
-      buttonText: 'Connect'
-    },
-    {
-      id: 'dribbble',
-      name: 'Dribbble',
-      icon: Eye,
-      color: 'bg-pink-500',
-      hoverColor: 'hover:bg-pink-600',
-      description: 'Design community',
-      category: 'Design',
-      users: '12M',
-      buttonText: 'Connect'
-    },
-    {
-      id: 'medium',
-      name: 'Medium',
-      icon: BookOpen,
-      color: 'bg-gray-900',
-      hoverColor: 'hover:bg-black',
-      description: 'Publishing platform',
-      category: 'Writing',
-      users: '100M',
-      buttonText: 'Connect'
-    },
-    {
-      id: 'clubhouse',
-      name: 'Clubhouse',
-      icon: Mic,
-      color: 'bg-green-400',
-      hoverColor: 'hover:bg-green-500',
-      description: 'Audio-based social networking',
-      category: 'Audio',
-      users: '10M',
-      buttonText: 'Connect'
-    },
-    {
-      id: 'vimeo',
-      name: 'Vimeo',
-      icon: Play,
-      color: 'bg-blue-600',
-      hoverColor: 'hover:bg-blue-700',
-      description: 'Video hosting platform',
-      category: 'Video',
-      users: '200M',
-      buttonText: 'Connect'
-    }
+  
+   
+ 
+   
   ];
 
   const filteredPlatforms = useMemo(() => {
