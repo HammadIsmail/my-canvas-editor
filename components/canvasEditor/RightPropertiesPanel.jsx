@@ -6,9 +6,7 @@ const RightPropertiesPanel = ({
   setShowAdvancedOptions, 
   textProps, 
   updateTextProperty,
-  selectedObject,
-  duplicateObject,
-  deleteObject
+ 
 }) => {
   if (!showAdvancedOptions) return null;
 
@@ -45,29 +43,8 @@ const RightPropertiesPanel = ({
         <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-700">Spacing</h4>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Line Height</label>
-              <input
-                type="number"
-                value={textProps.lineHeight}
-                onChange={(e) => updateTextProperty('lineHeight', Number(e.target.value))}
-                className="w-full text-sm border rounded-md px-3 py-1.5 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                min="0.5"
-                max="5"
-                step="0.1"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Letter Spacing</label>
-              <input
-                type="number"
-                value={textProps.letterSpacing}
-                onChange={(e) => updateTextProperty('letterSpacing', Number(e.target.value))}
-                className="w-full text-sm border rounded-md px-3 py-1.5 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                min="-50"
-                max="50"
-              />
-            </div>
+          
+          
             <div>
               <label className="block text-xs text-gray-600 mb-1">Char Spacing</label>
               <input

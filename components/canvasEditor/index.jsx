@@ -40,7 +40,10 @@ const CanvasEditor = () => {
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [fabricCanvas, setFabricCanvas] = useState(null);
+
   const [textProps, setTextProps] = useState({
+
     fontSize: 20,
     fontFamily: 'Arial',
     textColor: '#000000',
@@ -67,7 +70,7 @@ const CanvasEditor = () => {
     textBackgroundColor: 'transparent',
     selectionColor: 'rgba(17,119,255,0.3)',
     editingBorderColor: 'rgba(102,153,255,0.25)',
-    cursorColor: '#333333', // Changed from #333 to #333333
+    cursorColor: '#333333',
     cursorWidth: 2,
     direction: 'ltr',
   });
@@ -77,58 +80,61 @@ const CanvasEditor = () => {
     if (!canvasRef.current) return;
 
     const fabricCanvas = new fabric.Canvas(canvasRef.current, {
-      willReadFrequently: true, // Added for performance
+      willReadFrequently: true,
       width: canvasSize.width,
       height: canvasSize.height,
       backgroundColor: bgColor,
       selection: true,
-  evented: true,
+      evented: true,
       perPixelTargetFind: true,
       targetFindTolerance: 5
     });
 
-   const handleSelection = (e) => {
-  const obj = e.selected?.[0] || null;
-  setSelectedObject(obj);
-  setIsTextSelected(obj?.type === 'textbox' || obj?.type === 'i-text');
-  
-  if (obj?.type === 'textbox' || obj?.type === 'i-text') {
-    const textObj = obj;
-    const shadow = textObj.shadow;
-    
-    setTextProps({
-      fontSize: textObj.fontSize || 20,
-      fontFamily: textObj.fontFamily || 'Arial',
-      textColor: textObj.fill || '#000000',
-      isBold: textObj.fontWeight === 'bold',
-      isItalic: textObj.fontStyle === 'italic',
-      isUnderline: textObj.underline || false,
-      textAlign: textObj.textAlign || 'left',
-      lineHeight: textObj.lineHeight || 1.16,
-      letterSpacing: textObj.letterSpacing || 0,
-      strokeWidth: textObj.strokeWidth || 0,
-      strokeColor: textObj.stroke || '#000000',
-      shadowColor: shadow?.color || 'rgba(0,0,0,0.3)',
-      shadowBlur: shadow?.blur || 0,
-      shadowOffsetX: shadow?.offsetX || 0,
-      shadowOffsetY: shadow?.offsetY || 0,
-      backgroundColor: textObj.backgroundColor || 'transparent',
-      opacity: textObj.opacity || 1,
-      skewX: textObj.skewX || 0,
-      skewY: textObj.skewY || 0,
-      charSpacing: textObj.charSpacing || 0,
-      fontWeight: textObj.fontWeight || 'normal',
-      fontStyle: textObj.fontStyle || 'normal',
-      textDecoration: textObj.textDecoration || '',
-      textBackgroundColor: textObj.textBackgroundColor || 'transparent',
-      selectionColor: textObj.selectionColor || 'rgba(17,119,255,0.3)',
-      editingBorderColor: textObj.editingBorderColor || 'rgba(102,153,255,0.25)',
-      cursorColor: textObj.cursorColor || '#333333',
-      cursorWidth: textObj.cursorWidth || 2,
-      direction: textObj.direction || 'ltr',
-    });
-  }
-};
+    // Set initial zoom
+    fabricCanvas.setZoom(zoomLevel / 100);
+ setFabricCanvas(fabricCanvas);
+    const handleSelection = (e) => {
+      const obj = e.selected?.[0] || null;
+      setSelectedObject(obj);
+      setIsTextSelected(obj?.type === 'textbox' || obj?.type === 'i-text');
+      
+      if (obj?.type === 'textbox' || obj?.type === 'i-text') {
+        const textObj = obj;
+        const shadow = textObj.shadow;
+        
+        setTextProps({
+          fontSize: textObj.fontSize || 20,
+          fontFamily: textObj.fontFamily || 'Arial',
+          textColor: textObj.fill || '#000000',
+          isBold: textObj.fontWeight === 'bold',
+          isItalic: textObj.fontStyle === 'italic',
+          isUnderline: textObj.underline || false,
+          textAlign: textObj.textAlign || 'left',
+          lineHeight: textObj.lineHeight || 1.16,
+          letterSpacing: textObj.letterSpacing || 0,
+          strokeWidth: textObj.strokeWidth || 0,
+          strokeColor: textObj.stroke || '#000000',
+          shadowColor: shadow?.color || 'rgba(0,0,0,0.3)',
+          shadowBlur: shadow?.blur || 0,
+          shadowOffsetX: shadow?.offsetX || 0,
+          shadowOffsetY: shadow?.offsetY || 0,
+          backgroundColor: textObj.backgroundColor || 'transparent',
+          opacity: textObj.opacity || 1,
+          skewX: textObj.skewX || 0,
+          skewY: textObj.skewY || 0,
+          charSpacing: textObj.charSpacing || 0,
+          fontWeight: textObj.fontWeight || 'normal',
+          fontStyle: textObj.fontStyle || 'normal',
+          textDecoration: textObj.textDecoration || '',
+          textBackgroundColor: textObj.textBackgroundColor || 'transparent',
+          selectionColor: textObj.selectionColor || 'rgba(17,119,255,0.3)',
+          editingBorderColor: textObj.editingBorderColor || 'rgba(102,153,255,0.25)',
+          cursorColor: textObj.cursorColor || '#333333',
+          cursorWidth: textObj.cursorWidth || 2,
+          direction: textObj.direction || 'ltr',
+        });
+      }
+    };
 
     fabricCanvas.on('selection:created', handleSelection);
     fabricCanvas.on('selection:updated', handleSelection);
@@ -151,6 +157,7 @@ const CanvasEditor = () => {
       initCanvas();
     }
   }, [canvasSize, bgColor, bgImage, hasSelectedCanvas]);
+
 
   // Effect for background image
   useEffect(() => {
@@ -222,86 +229,85 @@ const CanvasEditor = () => {
   }, [canvas, copiedObject]);
 
   // Text property updates
-
-const updateTextProperty = (property, value) => {
-  if (!canvas || !selectedObject || (selectedObject.type !== 'textbox' && selectedObject.type !== 'i-text')) return;
-  
-  const textObj = selectedObject;
-  
-  // Handle shadow properties specially
-  if (property === 'shadowBlur' || property === 'shadowOffsetX' || property === 'shadowOffsetY' || property === 'shadowColor') {
-    const currentShadow = textObj.shadow || {};
+  const updateTextProperty = (property, value) => {
+    if (!canvas || !selectedObject || (selectedObject.type !== 'textbox' && selectedObject.type !== 'i-text')) return;
     
-    const newShadow = {
-      color: property === 'shadowColor' ? value : (currentShadow.color || textProps.shadowColor),
-      blur: property === 'shadowBlur' ? value : (currentShadow.blur || textProps.shadowBlur),
-      offsetX: property === 'shadowOffsetX' ? value : (currentShadow.offsetX || textProps.shadowOffsetX),
-      offsetY: property === 'shadowOffsetY' ? value : (currentShadow.offsetY || textProps.shadowOffsetY)
-    };
+    const textObj = selectedObject;
     
-    // Only create shadow if there's actually a shadow effect
-    if (newShadow.blur > 0 || newShadow.offsetX !== 0 || newShadow.offsetY !== 0) {
-      textObj.set('shadow', new fabric.Shadow(newShadow));
-    } else {
-      textObj.set('shadow', null);
+    // Handle shadow properties specially
+    if (property === 'shadowBlur' || property === 'shadowOffsetX' || property === 'shadowOffsetY' || property === 'shadowColor') {
+      const currentShadow = textObj.shadow || {};
+      
+      const newShadow = {
+        color: property === 'shadowColor' ? value : (currentShadow.color || textProps.shadowColor),
+        blur: property === 'shadowBlur' ? value : (currentShadow.blur || textProps.shadowBlur),
+        offsetX: property === 'shadowOffsetX' ? value : (currentShadow.offsetX || textProps.shadowOffsetX),
+        offsetY: property === 'shadowOffsetY' ? value : (currentShadow.offsetY || textProps.shadowOffsetY)
+      };
+      
+      // Only create shadow if there's actually a shadow effect
+      if (newShadow.blur > 0 || newShadow.offsetX !== 0 || newShadow.offsetY !== 0) {
+        textObj.set('shadow', new fabric.Shadow(newShadow));
+      } else {
+        textObj.set('shadow', null);
+      }
+      
+      // Update the textProps state
+      const propertyMap = {
+        'shadowColor': 'shadowColor',
+        'shadowBlur': 'shadowBlur',
+        'shadowOffsetX': 'shadowOffsetX',
+        'shadowOffsetY': 'shadowOffsetY'
+      };
+      
+      setTextProps(prev => ({ ...prev, [propertyMap[property]]: value }));
+    } 
+    // Handle text color
+    else if (property === 'textColor') {
+      textObj.set('fill', value);
+      setTextProps(prev => ({ ...prev, textColor: value }));
+    }
+    // Handle stroke color
+    else if (property === 'strokeColor') {
+      textObj.set('stroke', value);
+      setTextProps(prev => ({ ...prev, strokeColor: value }));
+    }
+    // Handle font weight for bold
+    else if (property === 'isBold') {
+      const fontWeight = value ? 'bold' : 'normal';
+      textObj.set('fontWeight', fontWeight);
+      setTextProps(prev => ({ ...prev, isBold: value, fontWeight }));
+    }
+    // Handle font style for italic
+    else if (property === 'isItalic') {
+      const fontStyle = value ? 'italic' : 'normal';
+      textObj.set('fontStyle', fontStyle);
+      setTextProps(prev => ({ ...prev, isItalic: value, fontStyle }));
+    }
+    // Handle underline
+    else if (property === 'isUnderline') {
+      textObj.set('underline', value);
+      setTextProps(prev => ({ ...prev, isUnderline: value }));
+    }
+    // Handle background colors
+    else if (property === 'backgroundColor') {
+      const bgColor = value === 'transparent' ? '' : value;
+      textObj.set('backgroundColor', bgColor);
+      setTextProps(prev => ({ ...prev, backgroundColor: value }));
+    }
+    else if (property === 'textBackgroundColor') {
+      const bgColor = value === 'transparent' ? '' : value;
+      textObj.set('textBackgroundColor', bgColor);
+      setTextProps(prev => ({ ...prev, textBackgroundColor: value }));
+    }
+    // Handle all other properties normally
+    else {
+      textObj.set(property, value);
+      setTextProps(prev => ({ ...prev, [property]: value }));
     }
     
-    // Update the textProps state
-    const propertyMap = {
-      'shadowColor': 'shadowColor',
-      'shadowBlur': 'shadowBlur',
-      'shadowOffsetX': 'shadowOffsetX',
-      'shadowOffsetY': 'shadowOffsetY'
-    };
-    
-    setTextProps(prev => ({ ...prev, [propertyMap[property]]: value }));
-  } 
-  // Handle text color
-  else if (property === 'textColor') {
-    textObj.set('fill', value);
-    setTextProps(prev => ({ ...prev, textColor: value }));
-  }
-  // Handle stroke color
-  else if (property === 'strokeColor') {
-    textObj.set('stroke', value);
-    setTextProps(prev => ({ ...prev, strokeColor: value }));
-  }
-  // Handle font weight for bold
-  else if (property === 'isBold') {
-    const fontWeight = value ? 'bold' : 'normal';
-    textObj.set('fontWeight', fontWeight);
-    setTextProps(prev => ({ ...prev, isBold: value, fontWeight }));
-  }
-  // Handle font style for italic
-  else if (property === 'isItalic') {
-    const fontStyle = value ? 'italic' : 'normal';
-    textObj.set('fontStyle', fontStyle);
-    setTextProps(prev => ({ ...prev, isItalic: value, fontStyle }));
-  }
-  // Handle underline
-  else if (property === 'isUnderline') {
-    textObj.set('underline', value);
-    setTextProps(prev => ({ ...prev, isUnderline: value }));
-  }
-  // Handle background colors
-  else if (property === 'backgroundColor') {
-    const bgColor = value === 'transparent' ? '' : value;
-    textObj.set('backgroundColor', bgColor);
-    setTextProps(prev => ({ ...prev, backgroundColor: value }));
-  }
-  else if (property === 'textBackgroundColor') {
-    const bgColor = value === 'transparent' ? '' : value;
-    textObj.set('textBackgroundColor', bgColor);
-    setTextProps(prev => ({ ...prev, textBackgroundColor: value }));
-  }
-  // Handle all other properties normally
-  else {
-    textObj.set(property, value);
-    setTextProps(prev => ({ ...prev, [property]: value }));
-  }
-  
-  canvas.renderAll();
-};
+    canvas.renderAll();
+  };
 
   // Canvas actions
   const addText = () => {
@@ -351,7 +357,7 @@ const updateTextProperty = (property, value) => {
     canvas.renderAll();
   };
 
-   const addRectangle = () => {
+  const addRectangle = () => {
     if (!canvas) return;
     const rect = new fabric.Rect({
       left: 150,
@@ -434,43 +440,42 @@ const updateTextProperty = (property, value) => {
     });
   };
 
-const addImageToCanvas = (imageUrl) => {
-  if (!canvas) return;
-  
-  fabric.Image.fromURL(imageUrl, (img) => {
-    // Scale image to fit canvas if it's too large
-    const maxWidth = canvasSize.width * 0.8;
-    const maxHeight = canvasSize.height * 0.8;
+  const addImageToCanvas = (imageUrl) => {
+    if (!canvas) return;
     
-    if (img.width > maxWidth || img.height > maxHeight) {
-      const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
-      img.scale(scale);
-    }
-    
-    // Center the image on canvas
-    img.set({
-      left: (canvasSize.width - img.getScaledWidth()) / 2,
-      top: (canvasSize.height - img.getScaledHeight()) / 2,
-      selectable: true,
-      evented: true,
-      hasControls: true,
-      hasBorders: true,
-      lockMovementX: false,
-      lockMovementY: false,
-      lockRotation: false,
-      lockScalingX: false,
-      lockScalingY: false,
-      hoverCursor: 'move'
+    fabric.Image.fromURL(imageUrl, (img) => {
+      // Scale image to fit canvas if it's too large
+      const maxWidth = canvasSize.width * 0.8;
+      const maxHeight = canvasSize.height * 0.8;
+      
+      if (img.width > maxWidth || img.height > maxHeight) {
+        const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
+        img.scale(scale);
+      }
+      
+      // Center the image on canvas
+      img.set({
+        left: (canvasSize.width - img.getScaledWidth()) / 2,
+        top: (canvasSize.height - img.getScaledHeight()) / 2,
+        selectable: true,
+        evented: true,
+        hasControls: true,
+        hasBorders: true,
+        lockMovementX: false,
+        lockMovementY: false,
+        lockRotation: false,
+        lockScalingX: false,
+        lockScalingY: false,
+        hoverCursor: 'move'
+      });
+      
+      canvas.add(img);
+      canvas.setActiveObject(img);
+      canvas.renderAll();
+    }, {
+      crossOrigin: 'anonymous'
     });
-    
-    canvas.add(img);
-    canvas.setActiveObject(img);
-    canvas.renderAll();
-  }, {
-    crossOrigin: 'anonymous' // Handle CORS issues
-  });
-};
-
+  };
 
   const handleBgImageUpload = (e) => {
     if (!e.target.files?.length) return;
@@ -486,12 +491,32 @@ const addImageToCanvas = (imageUrl) => {
     if (e.target) e.target.value = '';
   };
 
-  const handleZoom = (direction) => {
-    const newZoom = direction === 'in' ? zoomLevel + 10 : zoomLevel - 10;
-    if (newZoom >= 20 && newZoom <= 200) {
-      setZoomLevel(newZoom);
-    }
-  };
+ const handleZoom = (direction) => {
+  if (!canvas) return;
+
+  
+  
+  let newZoom = zoomLevel;
+  
+  if (direction === 'in') {
+    newZoom = Math.min(zoomLevel + 10, 300);
+  } else if (direction === 'out') {
+    newZoom = Math.max(zoomLevel - 10, 10);
+  } else if (direction === 'fit') {
+    // Reset to 100% for fit-to-screen
+    newZoom = 100;
+  }
+  
+  setZoomLevel(newZoom);
+};
+
+useEffect(() => {
+  if (canvas) {
+
+    canvas.setZoom(1);
+    canvas.renderAll();
+  }
+}, [zoomLevel, canvas]);
 
   if (!hasSelectedCanvas) {
     return (
@@ -503,9 +528,7 @@ const addImageToCanvas = (imageUrl) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col relative">
-     
-      
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <input
         id="bgImageInput"
         ref={bgImageInputRef}
@@ -515,25 +538,9 @@ const addImageToCanvas = (imageUrl) => {
         onChange={handleBgImageUpload}
       />
       
-      <TextPropertiesBar
-        isTextSelected={isTextSelected}
-        textProps={textProps}
-        updateTextProperty={updateTextProperty}
-        setShowAdvancedOptions={setShowAdvancedOptions}
-        showAdvancedOptions={showAdvancedOptions}
-        duplicateObject={duplicateObject}
-        deleteObject={deleteObject}
-      />
+    
 
-      <RightPropertiesPanel
-        showAdvancedOptions={showAdvancedOptions}
-        setShowAdvancedOptions={setShowAdvancedOptions}
-        textProps={textProps}
-        updateTextProperty={updateTextProperty}
-        selectedObject={selectedObject}
-        duplicateObject={duplicateObject}
-        deleteObject={deleteObject}
-      />
+    
 
       <CanvasOptions
         show={showCanvasOptions}
@@ -546,49 +553,63 @@ const addImageToCanvas = (imageUrl) => {
         setBgImage={setBgImage}
       />
 
-      <div className="flex flex-1">
-      <LeftSidebar
-  showCanvasOptions={showCanvasOptions}
-  setShowCanvasOptions={setShowCanvasOptions}
-  addText={addText}
-  addRectangle={addRectangle}
-  addCircle={addCircle}
-  fileInputRef={fileInputRef}
-  addImageToCanvas={addImageToCanvas} 
-setShowTemplates={setShowTemplates}
-showTemplates={showTemplates}
- canvas={canvas}
-/>
-
-        <CanvasComponent
-          canvasRef={canvasRef}
-          canvasSize={canvasSize}
-          zoomLevel={zoomLevel}
-          selectedObject={selectedObject}
-          setHasSelectedCanvas={setHasSelectedCanvas}
-          exportCanvas={exportCanvas}
-          handleZoom={handleZoom}
-          setShowSaveDialog={setShowSaveDialog}
+      {/* Main layout */}
+      <div className="flex flex-1 h-screen overflow-hidden">
+        <LeftSidebar
+          showCanvasOptions={showCanvasOptions}
+          setShowCanvasOptions={setShowCanvasOptions}
+          addText={addText}
+          addRectangle={addRectangle}
+          addCircle={addCircle}
+          fileInputRef={fileInputRef}
+          addImageToCanvas={addImageToCanvas} 
+          setShowTemplates={setShowTemplates}
+          showTemplates={showTemplates}
+          canvas={canvas}
         />
+
+      <CanvasComponent
+  canvasRef={canvasRef}
+  canvasSize={canvasSize}
+  zoomLevel={zoomLevel}
+  selectedObject={selectedObject}
+  setHasSelectedCanvas={setHasSelectedCanvas}
+  exportCanvas={exportCanvas}
+  handleZoom={handleZoom}
+  setShowSaveDialog={setShowSaveDialog}
+  setZoomLevel={setZoomLevel} // Add this line
+        isTextSelected={isTextSelected}
+              textProps={textProps}
+              updateTextProperty={updateTextProperty}
+              setShowAdvancedOptions={setShowAdvancedOptions}
+              showAdvancedOptions={showAdvancedOptions}
+              duplicateObject={duplicateObject}
+              deleteObject={deleteObject}
+    
+      
+/>
       </div>
+         <RightPropertiesPanel
+        showAdvancedOptions={showAdvancedOptions}
+        setShowAdvancedOptions={setShowAdvancedOptions}
+        textProps={textProps}
+        updateTextProperty={updateTextProperty}
+      
+      />
 
       <SaveDesignDialog
-  isOpen={showSaveDialog}
-  onClose={() => setShowSaveDialog(false)}
-  canvas={canvas}
-  canvasSize={canvasSize}
-  backgroundColor={bgColor}
-  backgroundImage={bgImage}
-  onSave={(savedDesign) => {
-    // Handle the saved design if needed
-    console.log('Design saved:', savedDesign);
-  }}
-/>
-
-
-
+        isOpen={showSaveDialog}
+        onClose={() => setShowSaveDialog(false)}
+        canvas={canvas}
+        canvasSize={canvasSize}
+        backgroundColor={bgColor}
+        backgroundImage={bgImage}
+        onSave={(savedDesign) => {
+          console.log('Design saved:', savedDesign);
+        }}
+      />
     </div>
   );
-};
+}
 
-export default CanvasEditor;
+export default CanvasEditor

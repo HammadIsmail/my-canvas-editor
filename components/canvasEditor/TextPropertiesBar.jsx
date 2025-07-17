@@ -34,7 +34,7 @@ const TextPropertiesBar = ({
   if (!isTextSelected) return null;
 
   return (
-    <div className="bg-white border-b p-3 flex items-center gap-3 shadow-sm">
+    <div className="absolute w-[calc(100%-65px)] bg-white border-b p-3 flex items-center gap-3 shadow-sm">
       <select
         value={textProps.fontFamily}
         onChange={(e) => updateTextProperty('fontFamily', e.target.value)}

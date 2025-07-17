@@ -1,6 +1,6 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
-
+import { Toaster } from "@/components/ui/sonner"
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
@@ -13,7 +13,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        {children}
+        <Toaster
+  position="top-right"
+  theme="light"
+  toastOptions={{
+    style: {
+      background: "linear-gradient(135deg, #7e22ce, #a855f7)",
+      color: "white",
+      borderRadius: "10px",
+      boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+    },
+    duration: 4000, // Optional: sets how long the toast shows
+  }}
+/>
+      </body>
     </html>
   );
 }
