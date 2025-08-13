@@ -5,25 +5,15 @@ import { fabric } from 'fabric';
 import LeftSidebar from './LeftSidebar';
 import CanvasOptions from './CanvasOptions';
 import RightPropertiesPanel from './RightPropertiesPanel';
-import TextPropertiesBar from './TextPropertiesBar';
 import CanvasComponent from './CanvasComponent';
 import CanvasPreset from './CanvasPreset';
 import SaveDesignDialog from './SaveDesignDialog';
+import { CANVAS_PRESETS } from './constants';
+import ColorPicker from './colorPicker/ColorPicker';
 
-const CANVAS_PRESETS = {
-  portrait: { width: 800, height: 1000, label: 'Portrait', icon: '🖼️', displaySize: 300 },
-  landscape: { width: 1000, height: 800, label: 'Landscape', icon: '🌄', displaySize: 350 },
-  square: { width: 800, height: 800, label: 'Square', icon: '⬜', displaySize: 300 },
-  instagramPost: { width: 1080, height: 1080, label: 'Instagram Post', icon: '📷', displaySize: 300 },
-  instagramStory: { width: 1080, height: 1920, label: 'Instagram Story', icon: '📱', displaySize: 200 },
-  facebookPost: { width: 1200, height: 630, label: 'Facebook Post', icon: '👍', displaySize: 350 },
-  twitterPost: { width: 1024, height: 512, label: 'Twitter Post', icon: '🐦', displaySize: 400 },
-  linkedinPost: { width: 1200, height: 627, label: 'LinkedIn Post', icon: '💼', displaySize: 350 },
-  pinterestPin: { width: 1000, height: 1500, label: 'Pinterest Pin', icon: '📌', displaySize: 250 },
-  custom: { width: 800, height: 600, label: 'Custom', icon: '⚙️', displaySize: 300 }
-};
 
-const CanvasEditor = () => {
+
+const CanvasEditor = ({ onSaveImage, onClose }) => {
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
   const bgImageInputRef = useRef(null);
@@ -34,12 +24,13 @@ const CanvasEditor = () => {
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [showCanvasOptions, setShowCanvasOptions] = useState(false);
   const [canvasSize, setCanvasSize] = useState(CANVAS_PRESETS.portrait);
-  const [bgColor, setBgColor] = useState('#ffffff');
-  const [bgImage, setBgImage] = useState(null);
   const [hasSelectedCanvas, setHasSelectedCanvas] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showTextColorPicker, setShowTextColorPicker] = useState(false);
+const [showStrokeColorPicker, setShowStrokeColorPicker] = useState(false);
+const [showBgColorPicker, setShowBgColorPicker] = useState(false);
   const [fabricCanvas, setFabricCanvas] = useState(null);
 
   const [textProps, setTextProps] = useState({
@@ -83,7 +74,7 @@ const CanvasEditor = () => {
       willReadFrequently: true,
       width: canvasSize.width,
       height: canvasSize.height,
-      backgroundColor: bgColor,
+      backgroundColor: 'white', // Default background color
       selection: true,
       evented: true,
       perPixelTargetFind: true,
@@ -156,40 +147,10 @@ const CanvasEditor = () => {
     if (hasSelectedCanvas) {
       initCanvas();
     }
-  }, [canvasSize, bgColor, bgImage, hasSelectedCanvas]);
+  }, [canvasSize,  hasSelectedCanvas]);
 
 
-  // Effect for background image
-  useEffect(() => {
-    if (bgImage && canvas) {
-      fabric.Image.fromURL(bgImage, (img) => {
-        const scale = Math.min(
-          canvasSize.width / img.width,
-          canvasSize.height / img.height
-        );
-        img.scale(scale);
-        img.set({
-          left: 0,
-          top: 0,
-          selectable: false,
-          evented: false,
-          hasControls: false,
-          hasBorders: false,
-          lockMovementX: true,
-          lockMovementY: true,
-          lockRotation: true,
-          lockScalingX: true,
-          lockScalingY: true,
-          lockUniScaling: true,
-          hoverCursor: 'default'
-        });
-        
-        canvas.add(img);
-        canvas.sendToBack(img);
-        canvas.renderAll();
-      });
-    }
-  }, [bgImage, canvas]);
+ 
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -310,100 +271,78 @@ const CanvasEditor = () => {
   };
 
   // Canvas actions
-  const addText = () => {
-    if (!canvas) return;
-    
-    const shadow = textProps.shadowBlur > 0 || textProps.shadowOffsetX !== 0 || textProps.shadowOffsetY !== 0 
-      ? new fabric.Shadow({
-          color: textProps.shadowColor,
-          blur: textProps.shadowBlur,
-          offsetX: textProps.shadowOffsetX,
-          offsetY: textProps.shadowOffsetY
-        })
-      : null;
-
-    const text = new fabric.Textbox('Edit this text', {
-      left: 100,
-      top: 100,
-      width: 200,
-      hasControls: true,
-      fontSize: textProps.fontSize,
-      fontFamily: textProps.fontFamily,
-      fill: textProps.textColor,
-      textAlign: textProps.textAlign,
-      fontWeight: textProps.isBold ? 'bold' : textProps.fontWeight,
-      fontStyle: textProps.isItalic ? 'italic' : textProps.fontStyle,
-      underline: textProps.isUnderline,
-      lineHeight: textProps.lineHeight,
-      letterSpacing: textProps.letterSpacing,
-      strokeWidth: textProps.strokeWidth,
-      stroke: textProps.strokeColor,
-      shadow: shadow,
-      backgroundColor: textProps.backgroundColor === 'transparent' ? '' : textProps.backgroundColor,
-      opacity: textProps.opacity,
-      skewX: textProps.skewX,
-      skewY: textProps.skewY,
-      charSpacing: textProps.charSpacing,
-      textBackgroundColor: textProps.textBackgroundColor === 'transparent' ? '' : textProps.textBackgroundColor,
-      selectionColor: textProps.selectionColor,
-      editingBorderColor: textProps.editingBorderColor,
-      cursorColor: textProps.cursorColor,
-      cursorWidth: textProps.cursorWidth,
-      direction: textProps.direction,
-    });
-    
-    canvas.add(text);
-    canvas.setActiveObject(text);
-    canvas.renderAll();
+const addText = (styleOptions = null) => {
+  if (!canvas) return;
+  
+  // Default text properties
+  let textOptions = {
+    text: 'Edit this text',
+    fontSize: textProps.fontSize,
+    fontFamily: textProps.fontFamily,
+    fontWeight: textProps.isBold ? 'bold' : textProps.fontWeight,
+    fontStyle: textProps.isItalic ? 'italic' : textProps.fontStyle,
+    fill: textProps.textColor,
+    textAlign: textProps.textAlign,
   };
 
-  const addRectangle = () => {
-    if (!canvas) return;
-    const rect = new fabric.Rect({
-      left: 150,
-      top: 150,
-      width: 100,
-      height: 100,
-      fill: '#ff6b6b',
-      selectable: true,
-      evented: true,
-      hasControls: true,
-      hasBorders: true,
-      lockMovementX: false,
-      lockMovementY: false,
-      lockRotation: false,
-      lockScalingX: false,
-      lockScalingY: false,
-      hoverCursor: 'move'
-    });
-    canvas.add(rect);
-    canvas.setActiveObject(rect);
-    canvas.renderAll();
-  };
+  // Override with style options if provided
+  if (styleOptions) {
+    textOptions = {
+      ...textOptions,
+      text: styleOptions.text || textOptions.text,
+      fontSize: styleOptions.fontSize || textOptions.fontSize,
+      fontFamily: styleOptions.fontFamily || textOptions.fontFamily,
+      fontWeight: styleOptions.fontWeight || textOptions.fontWeight,
+    };
+  }
 
-  const addCircle = () => {
-    if (!canvas) return;
-    const circle = new fabric.Circle({
-      left: 200,
-      top: 200,
-      radius: 50,
-      fill: '#ff6b6b',
-      selectable: true,
-      evented: true,
-      hasControls: true,
-      hasBorders: true,
-      lockMovementX: false,
-      lockMovementY: false,
-      lockRotation: false,
-      lockScalingX: false,
-      lockScalingY: false,
-      hoverCursor: 'move'
-    });
-    canvas.add(circle);
-    canvas.setActiveObject(circle);
-    canvas.renderAll();
-  };
+  const shadow = textProps.shadowBlur > 0 || textProps.shadowOffsetX !== 0 || textProps.shadowOffsetY !== 0 
+    ? new fabric.Shadow({
+        color: textProps.shadowColor,
+        blur: textProps.shadowBlur,
+        offsetX: textProps.shadowOffsetX,
+        offsetY: textProps.shadowOffsetY
+      })
+    : null;
 
+  const text = new fabric.Textbox(textOptions.text, {
+    left: 100,
+    top: 100,
+    width: 200,
+    hasControls: true,
+    fontSize: textOptions.fontSize,
+    fontFamily: textOptions.fontFamily,
+    fill: textOptions.fill,
+    textAlign: textOptions.textAlign,
+    fontWeight: textOptions.fontWeight,
+    fontStyle: textOptions.fontStyle,
+    underline: textProps.isUnderline,
+    lineHeight: textProps.lineHeight,
+    letterSpacing: textProps.letterSpacing,
+    strokeWidth: textProps.strokeWidth,
+    stroke: textProps.strokeColor,
+    shadow: shadow,
+    backgroundColor: textProps.backgroundColor === 'transparent' ? '' : textProps.backgroundColor,
+    opacity: textProps.opacity,
+    skewX: textProps.skewX,
+    skewY: textProps.skewY,
+    charSpacing: textProps.charSpacing,
+    textBackgroundColor: textProps.textBackgroundColor === 'transparent' ? '' : textProps.textBackgroundColor,
+    selectionColor: textProps.selectionColor,
+    editingBorderColor: textProps.editingBorderColor,
+    cursorColor: textProps.cursorColor,
+    cursorWidth: textProps.cursorWidth,
+    direction: textProps.direction,
+  });
+  
+  canvas.add(text);
+  canvas.setActiveObject(text);
+  canvas.renderAll();
+};
+
+ 
+
+ 
   const exportCanvas = () => {
     if (!canvas) return;
     const dataURL = canvas.toDataURL({
@@ -518,14 +457,34 @@ useEffect(() => {
   }
 }, [zoomLevel, canvas]);
 
+
   if (!hasSelectedCanvas) {
     return (
       <CanvasPreset 
+      onClose={onClose}
         setHasSelectedCanvas={setHasSelectedCanvas} 
         setCanvasSize={setCanvasSize}
       />
     );
   }
+
+ const updateCanvasSize = (newSize) => {
+  if (!canvas) return;
+  
+  canvas.clear();
+  canvas.setDimensions({
+    width: newSize.width,
+    height: newSize.height
+  });
+  
+  setCanvasSize(newSize);
+  setZoomLevel(100);
+  canvas.setZoom(1);
+  canvas.renderAll();
+};
+
+ 
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -538,20 +497,41 @@ useEffect(() => {
         onChange={handleBgImageUpload}
       />
       
-    
+    <ColorPicker
+  isOpen={showTextColorPicker}
+  onClose={() => setShowTextColorPicker(false)}
+  selectedColor={textProps.textColor}
+  onColorSelect={(color) => updateTextProperty('textColor', color)}
+  title="Text color"
+  
+/>
+
+<ColorPicker
+  isOpen={showStrokeColorPicker}
+  onClose={() => setShowStrokeColorPicker(false)}
+  selectedColor={textProps.strokeColor}
+  onColorSelect={(color) => updateTextProperty('strokeColor', color)}
+  title="Stroke color"
+/>
+
+<ColorPicker
+  isOpen={showBgColorPicker}
+  onClose={() => setShowBgColorPicker(false)}
+  selectedColor={textProps.backgroundColor}
+  onColorSelect={(color) => updateTextProperty('backgroundColor', color)}
+  title="Background color"
+/>
 
     
 
-      <CanvasOptions
-        show={showCanvasOptions}
-        onClose={() => setShowCanvasOptions(false)}
-        canvasSize={canvasSize}
-        setCanvasSize={setCanvasSize}
-        bgColor={bgColor}
-        setBgColor={setBgColor}
-        bgImage={bgImage}
-        setBgImage={setBgImage}
-      />
+  <CanvasOptions
+  show={showCanvasOptions}
+  onClose={() => setShowCanvasOptions(false)}
+  canvasSize={canvasSize}
+  setCanvasSize={setCanvasSize}
+  canvas={canvas}
+  updateCanvasSize={updateCanvasSize} // Add this line
+/>
 
       {/* Main layout */}
       <div className="flex flex-1 h-screen overflow-hidden">
@@ -559,8 +539,7 @@ useEffect(() => {
           showCanvasOptions={showCanvasOptions}
           setShowCanvasOptions={setShowCanvasOptions}
           addText={addText}
-          addRectangle={addRectangle}
-          addCircle={addCircle}
+         
           fileInputRef={fileInputRef}
           addImageToCanvas={addImageToCanvas} 
           setShowTemplates={setShowTemplates}
@@ -585,6 +564,9 @@ useEffect(() => {
               showAdvancedOptions={showAdvancedOptions}
               duplicateObject={duplicateObject}
               deleteObject={deleteObject}
+              setShowTextColorPicker={setShowTextColorPicker}
+              onClose={onClose}
+              onSaveImage={onSaveImage} 
     
       
 />
@@ -594,6 +576,9 @@ useEffect(() => {
         setShowAdvancedOptions={setShowAdvancedOptions}
         textProps={textProps}
         updateTextProperty={updateTextProperty}
+        setShowBgColorPicker={setShowBgColorPicker}
+        setShowStrokeColorPicker={setShowStrokeColorPicker}
+
       
       />
 
@@ -602,8 +587,6 @@ useEffect(() => {
         onClose={() => setShowSaveDialog(false)}
         canvas={canvas}
         canvasSize={canvasSize}
-        backgroundColor={bgColor}
-        backgroundImage={bgImage}
         onSave={(savedDesign) => {
           console.log('Design saved:', savedDesign);
         }}

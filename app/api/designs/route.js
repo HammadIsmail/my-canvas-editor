@@ -75,7 +75,7 @@ export async function POST(request) {
       canvasData,
       canvasSize,
       backgroundColor,
-      backgroundImage,
+     
       isPublic,
       category,
       tags,
@@ -94,7 +94,7 @@ export async function POST(request) {
       canvasData,
       canvasSize,
       backgroundColor,
-      backgroundImage,
+     
       isPublic,
       category,
       tags: tags || [],

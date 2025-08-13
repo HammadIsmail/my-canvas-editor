@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Search, Plus, User, ChevronDown } from 'lucide-react';
+import {  Plus, User, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,

@@ -14,8 +14,6 @@ const SaveDesignDialog = ({
   onClose, 
   canvas, 
   canvasSize, 
-  backgroundColor, 
-  backgroundImage,
   onSave 
 }) => {
   const [formData, setFormData] = useState({
@@ -104,8 +102,8 @@ const SaveDesignDialog = ({
         height: canvasSize.height,
         preset: canvasSize.label // Add the preset label here
       },
-      backgroundColor,
-      backgroundImage,
+      backgroundColor: "white", // Default background color, can be customized
+      
       isPublic: formData.isPublic,
       category: formData.category,
       tags: formData.tags,

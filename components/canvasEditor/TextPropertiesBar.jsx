@@ -29,7 +29,8 @@ const TextPropertiesBar = ({
   setShowAdvancedOptions, 
   showAdvancedOptions,
   duplicateObject,
-  deleteObject
+  deleteObject,
+  setShowTextColorPicker
 }) => {
   if (!isTextSelected) return null;
 
@@ -136,13 +137,12 @@ const TextPropertiesBar = ({
         </Button>
       </div>
 
-      <input
-        type="color"
-        value={textProps.textColor}
-        onChange={(e) => updateTextProperty('textColor', e.target.value)}
-        className="w-8 h-8 border rounded-md cursor-pointer hover:border-gray-400"
-        title="Text Color"
-      />
+     <button
+  onClick={() => setShowTextColorPicker(true)}
+  className="w-8 h-8 border rounded-md cursor-pointer hover:border-gray-400 transition-colors"
+  style={{ backgroundColor: textProps.textColor }}
+  title="Text Color"
+/>
 
       <Button
         variant={showAdvancedOptions ? "default" : "outline"}

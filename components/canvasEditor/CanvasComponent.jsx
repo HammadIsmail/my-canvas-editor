@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Download, Minus, Plus, Save } from 'lucide-react';
-import RightPropertiesPanel from './RightPropertiesPanel';
+import { ArrowLeft, Download, Minus, Plus, Save, X } from 'lucide-react'; // Added X icon
 import TextPropertiesBar from './TextPropertiesBar';
 
 const CanvasComponent = ({ 
@@ -12,116 +11,174 @@ const CanvasComponent = ({
   exportCanvas,
   handleZoom,
   setShowSaveDialog,
-        isTextSelected,
-              textProps,
-              updateTextProperty,
-              setShowAdvancedOptions,
-              showAdvancedOptions,
-              duplicateObject,
-              deleteObject,
-
-      
+  isTextSelected,
+  textProps,
+  updateTextProperty,
+  setShowAdvancedOptions,
+  showAdvancedOptions,
+  duplicateObject,
+  deleteObject,
+  setShowTextColorPicker,
+  onClose,
+  onSaveImage, // Added onSaveImage prop
 }) => {
   
-  // Calculate the maximum size the canvas can be displayed at to fit in viewport
   const calculateMaxDisplaySize = () => {
-    // Account for header (60px), padding (48px), and some margin
-    const availableHeight = window.innerHeight - 60 - 48 - 40; // 40px for extra margin
-    const availableWidth = window.innerWidth - 320 - 48; // 320px for sidebars, 48px padding
+    const availableHeight = window.innerHeight - 60 - 48 - 40;
+    const availableWidth = window.innerWidth - 320 - 48;
     
-    // Calculate scale to fit canvas within available space
     const scaleX = availableWidth / canvasSize.width;
     const scaleY = availableHeight / canvasSize.height;
-    const maxScale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
+    const maxScale = Math.min(scaleX, scaleY, 1);
     
-    return Math.max(0.1, maxScale); // Minimum 10% scale
+    return Math.max(0.1, maxScale);
   };
 
   const maxDisplayScale = calculateMaxDisplaySize();
   const actualScale = Math.min(zoomLevel / 100, maxDisplayScale);
-  
+
+  // Modified export function to handle saving to website
+  const handleExport = async () => {
+    if (!canvasRef.current) return;
+    
+    const dataURL = canvasRef.current.toDataURL({
+      format: 'png',
+      quality: 1,
+      multiplier: 2
+    });
+
+    if (onSaveImage) {
+      await onSaveImage(dataURL); // Save to website if handler provided
+    } else {
+      exportCanvas(); // Fallback to download
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col h-screen">
       {/* Header */}
-      <div className="bg-white border-b p-3 flex items-center justify-between h-[60px] flex-shrink-0">
-        <div className="flex items-center space-x-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setHasSelectedCanvas(false)}
-            className="text-gray-600 hover:text-gray-800"
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between h-[72px] flex-shrink-0">
+  {/* Left Section */}
+  <div className="flex items-center space-x-6">
+    <Button 
+      variant="ghost" 
+      size="sm" 
+      onClick={() => setHasSelectedCanvas(false)}
+      className="text-gray-700 hover:bg-gray-100/80 hover:text-gray-900 px-3 py-1.5 rounded-lg transition-colors"
+    >
+      <ArrowLeft size={18} className="mr-2" />
+      <span className="font-medium">Templates</span>
+    </Button>
+    
+    {selectedObject && (
+      <div className="flex items-center space-x-2 bg-gray-50 rounded-lg px-3 py-1.5 border border-gray-200">
+        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+        <span className="text-sm font-medium text-gray-700 capitalize">
+          {selectedObject.type} selected
+        </span>
+      </div>
+    )}
+  </div>
+  
+ 
+  
+  {/* Right Section - Controls */}
+  <div className="flex items-center space-x-3">
+     {/* Center Section - Canvas Info */}
+  <div className="hidden md:flex items-center space-x-4">
+    <div className="flex items-center space-x-2 bg-gray-50 rounded-lg px-3 py-1.5 border border-gray-200">
+      <span className="text-sm font-medium text-gray-700">
+        {canvasSize.width} × {canvasSize.height} px
+      </span>
+    </div>
+  </div>
+    {/* Zoom Controls */}
+    <div className="hidden sm:flex items-center space-x-1 bg-gray-50 rounded-lg px-2 py-1 border border-gray-200">
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        onClick={() => handleZoom('out')}
+        disabled={zoomLevel <= 20}
+        className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+      >
+        <Minus size={16} />
+      </Button>
+      <div className="flex items-center justify-center w-16">
+        <span className="text-sm font-medium text-gray-700">
+          {zoomLevel}%
+        </span>
+      </div>
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        onClick={() => handleZoom('in')}
+        disabled={zoomLevel >= 100}
+        className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+      >
+        <Plus size={16} />
+      </Button>
+    </div>
+    
+    {/* Action Buttons */}
+    <div className="flex items-center space-x-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setShowSaveDialog(true)}
+        className="px-4 py-1.5 rounded-lg border-gray-300 hover:bg-gray-50"
+      >
+        <Save className="mr-2 h-4 w-4" />
+        <span className="font-medium">Save Draft</span>
+      </Button>
+      
+      <div className="relative group">
+        <Button 
+          onClick={handleExport}
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-4 py-1.5 rounded-lg shadow-sm hover:shadow-md transition-all"
+        >
+          <Download size={16} className="mr-2" />
+          <span className="font-medium">Publish</span>
+        </Button>
+        <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button 
+            onClick={handleExport}
+            className="w-full text-left px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-t-lg"
           >
-            <ArrowLeft size={16} className="mr-2" />
-            Back to Templates
-          </Button>
-          
-          {selectedObject && (
-            <span className="text-sm text-gray-500 capitalize">
-              {selectedObject.type} selected
-            </span>
-          )}
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => handleZoom('out')}
-              disabled={zoomLevel <= 20}
-              className="h-6 w-6 p-0 text-gray-600 hover:text-gray-800"
-            >
-              <Minus size={14} />
-            </Button>
-            <span className="text-sm text-gray-700 min-w-[40px] text-center">
-              {zoomLevel}%
-            </span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => handleZoom('in')}
-              disabled={zoomLevel >= 100}
-              className="h-6 w-6 p-0 text-gray-600 hover:text-gray-800"
-            >
-              <Plus size={14} />
-            </Button>
-          </div>
-          
-          <span className="text-sm text-gray-500">
-            {canvasSize.width} × {canvasSize.height}
-          </span>
-         
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowSaveDialog(true)}
+            Save to SocialFit
+          </button>
+          <button 
+            onClick={exportCanvas}
+            className="w-full text-left px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-b-lg"
           >
-            <Save className="mr-2 h-4 w-4" />
-            Save Design
-          </Button>
-          
-          <Button 
-            onClick={exportCanvas} 
-            className="bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-md"
-          >
-            <Download size={16} className="mr-2" />
-            Export
-          </Button>
+            Save to Device
+          </button>
         </div>
       </div>
+      
+      {/* Close Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onClose}
+        className="h-9 w-9 p-0 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+      >
+        <X size={18} />
+      </Button>
+    </div>
+  </div>
+</div>
 
-        {/* Fixed positioned panels */}
-            <TextPropertiesBar
-              isTextSelected={isTextSelected}
-              textProps={textProps}
-              updateTextProperty={updateTextProperty}
-              setShowAdvancedOptions={setShowAdvancedOptions}
-              showAdvancedOptions={showAdvancedOptions}
-              duplicateObject={duplicateObject}
-              deleteObject={deleteObject}
-            />
-
-     
+      {/* Text Properties Bar */}
+      <TextPropertiesBar
+        isTextSelected={isTextSelected}
+        textProps={textProps}
+        updateTextProperty={updateTextProperty}
+        setShowAdvancedOptions={setShowAdvancedOptions}
+        showAdvancedOptions={showAdvancedOptions}
+        duplicateObject={duplicateObject}
+        deleteObject={deleteObject}
+        setShowTextColorPicker={setShowTextColorPicker}
+      />
 
       {/* Canvas Area */}
       <div className="flex-1 relative bg-gray-100 overflow-hidden">
@@ -138,7 +195,6 @@ const CanvasComponent = ({
               maxHeight: '100%'
             }}
           >
-            {/* Canvas wrapper to maintain aspect ratio */}
             <div 
               className="relative"
               style={{
@@ -158,8 +214,6 @@ const CanvasComponent = ({
                 }}
               />
             </div>
-            
-        
           </div>
         </div>
 

@@ -5,15 +5,15 @@ import { TopBar } from '@/components/top-bar';
 import { PostCards } from '@/components/post-cards';
 
 import  CalendarView  from '@/components/calendar-view';
-import { CreatePostModal } from '@/components/create-post-modal';
 import SocialMediaManager from '@/components/SocialMediaManager';
 import EcommerceIntegrationManager from '@/components/EcommerceIntegrationManager';
 import SettingsPages from '@/components/settings/Setting';
 import SocialMediaAnalytics from '@/components/Analytics';
+import CreatePostModal from '@/components/createPost/create-post-modal';
 
 export default function Home() {
   const [activeView, setActiveView] = useState('posts'); 
-  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
+  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(true);
   const [posts, setPosts] = useState([]);
 
   const handlePostCreated = (newPost) => {
@@ -22,7 +22,7 @@ export default function Home() {
 
   const renderMainContent = () => {
     switch (activeView) {
-      case 'posts': // Changed from 'dashboard' to 'posts' to match sidebar
+      case 'posts': 
         return (
           <div className="space-y-6">
             <PostCards onCreatePost={() => setIsCreatePostModalOpen(true)} />
