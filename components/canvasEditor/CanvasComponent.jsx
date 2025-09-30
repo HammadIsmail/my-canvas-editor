@@ -139,7 +139,7 @@ const CanvasComponent = ({
           <Download size={16} className="mr-2" />
           <span className="font-medium">Publish</span>
         </Button>
-        <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        {/* <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <button 
             onClick={handleExport}
             className="w-full text-left px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-t-lg"
@@ -152,7 +152,7 @@ const CanvasComponent = ({
           >
             Save to Device
           </button>
-        </div>
+        </div> */}
       </div>
       
       {/* Close Button */}
